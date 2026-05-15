@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RestoPro — Planes y Precios</title>
+<style>
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --green: #00C9A7;
+    --green2: #00b396;
+    --bg: #0f1117;
+    --card: #1a1d27;
+    --border: #2a2d3a;
+    --text: #e0e0e0;
+    --muted: #666;
+  }
+  body { background:var(--bg); color:var(--text); font-family:system-ui,-apple-system,sans-serif; min-height:100vh; }
+
+  /* ── NAV ── */
+  nav { display:flex; align-items:center; justify-content:space-between; padding:18px 40px; border-bottom:1px solid var(--border); }
+  .nav-logo { font-size:1.4rem; font-weight:800; color:var(--green); }
+  .nav-logo span { color:#fff; font-weight:400; font-size:.9rem; margin-left:8px; }
+  .nav-wa { background:var(--green); color:#000; font-weight:700; font-size:.85rem; border:none; border-radius:8px; padding:9px 18px; cursor:pointer; text-decoration:none; }
+
+  /* ── HERO ── */
+  .hero { text-align:center; padding:72px 20px 48px; }
+  .hero h1 { font-size:2.6rem; font-weight:800; line-height:1.2; margin-bottom:16px; }
+  .hero h1 span { color:var(--green); }
+  .hero p { color:var(--muted); font-size:1.05rem; max-width:520px; margin:0 auto 32px; line-height:1.6; }
+  .trial-badge {
+    display:inline-block;
+    background:rgba(0,201,167,.12);
+    border:1px solid rgba(0,201,167,.3);
+    color:var(--green);
+    font-size:.82rem;
+    font-weight:600;
+    padding:6px 16px;
+    border-radius:20px;
+    margin-bottom:48px;
+  }
+
+  /* ── PLANES ── */
+  .plans { display:flex; gap:24px; justify-content:center; flex-wrap:wrap; padding:0 20px 64px; max-width:1000px; margin:0 auto; }
+  .plan {
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:32px 28px;
+    flex:1;
+    min-width:260px;
+    max-width:300px;
+    position:relative;
+    transition:transform .2s, border-color .2s;
+  }
+  .plan:hover { transform:translateY(-4px); border-color:#3a3d4a; }
+  .plan.popular {
+    border-color:var(--green);
+    box-shadow:0 0 0 1px var(--green), 0 20px 40px rgba(0,201,167,.1);
+  }
+  .popular-badge {
+    position:absolute;
+    top:-14px; left:50%;
+    transform:translateX(-50%);
+    background:var(--green);
+    color:#000;
+    font-size:.72rem;
+    font-weight:800;
+    padding:4px 14px;
+    border-radius:20px;
+    letter-spacing:.5px;
+    white-space:nowrap;
+  }
+  .plan-name { font-size:.8rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; }
+  .plan-price { font-size:2.6rem; font-weight:800; margin-bottom:4px; }
+  .plan-price sup { font-size:1.1rem; font-weight:600; margin-right:2px; vertical-align:super; }
+  .plan-period { font-size:.8rem; color:var(--muted); margin-bottom:24px; }
+  .plan-features { list-style:none; margin-bottom:28px; }
+  .plan-features li { font-size:.88rem; color:#bbb; padding:7px 0; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; }
+  .plan-features li:last-child { border-bottom:none; }
+  .plan-features li .ok  { color:var(--green); font-size:1rem; }
+  .plan-features li .no  { color:#444; font-size:1rem; }
+  .btn-plan {
+    width:100%;
+    padding:12px;
+    border-radius:9px;
+    border:none;
+    font-weight:700;
+    font-size:.92rem;
+    cursor:pointer;
+    transition:background .2s;
+  }
+  .btn-primary { background:var(--green); color:#000; }
+  .btn-primary:hover { background:var(--green2); }
+  .btn-secondary { background:var(--border); color:#aaa; }
+  .btn-secondary:hover { background:#333; color:#fff; }
+
+  /* ── MÉTODOS DE PAGO ── */
+  .payment-section { text-align:center; padding:0 20px 72px; }
+  .payment-section h2 { font-size:1.5rem; font-weight:700; margin-bottom:8px; }
+  .payment-section p { color:var(--muted); font-size:.88rem; margin-bottom:32px; }
+  .methods { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; max-width:720px; margin:0 auto; }
+  .method {
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:20px 24px;
+    flex:1;
+    min-width:160px;
+    max-width:200px;
+    cursor:pointer;
+    transition:all .2s;
+    text-align:center;
+  }
+  .method:hover { border-color:var(--green); transform:translateY(-2px); }
+  .method.selected { border-color:var(--green); background:rgba(0,201,167,.07); }
+  .method-icon { font-size:2rem; margin-bottom:8px; }
+  .method-name { font-size:.85rem; font-weight:600; margin-bottom:4px; }
+  .method-desc { font-size:.72rem; color:var(--muted); }
+
+  /* ── DETALLE MÉTODO ── */
+  .method-detail { display:none; max-width:480px; margin:24px auto 0; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:24px; text-align:left; }
+  .method-detail.show { display:block; }
+  .method-detail h3 { font-size:1rem; margin-bottom:12px; }
+  .method-detail .info-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border); font-size:.85rem; }
+  .method-detail .info-row:last-of-type { border-bottom:none; }
+  .method-detail .info-row span { color:var(--muted); }
+  .method-detail .info-row strong { font-family:monospace; font-size:.95rem; }
+  .copy-btn { background:none; border:1px solid var(--border); color:#aaa; font-size:.72rem; padding:3px 10px; border-radius:6px; cursor:pointer; margin-left:8px; }
+  .copy-btn:hover { border-color:var(--green); color:var(--green); }
+  .method-detail .wa-btn { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; margin-top:16px; background:#25D366; color:#fff; font-weight:700; font-size:.9rem; padding:11px; border-radius:9px; border:none; cursor:pointer; text-decoration:none; transition:background .2s; }
+  .method-detail .wa-btn:hover { background:#1ebe5b; }
+
+  /* ── FAQ ── */
+  .faq { max-width:640px; margin:0 auto 72px; padding:0 20px; }
+  .faq h2 { text-align:center; font-size:1.5rem; font-weight:700; margin-bottom:32px; }
+  .faq-item { border-bottom:1px solid var(--border); padding:16px 0; }
+  .faq-q { font-size:.92rem; font-weight:600; cursor:pointer; display:flex; justify-content:space-between; }
+  .faq-a { font-size:.85rem; color:var(--muted); line-height:1.6; margin-top:10px; display:none; }
+  .faq-item.open .faq-a { display:block; }
+  .faq-item.open .arrow { transform:rotate(180deg); }
+  .arrow { transition:transform .2s; display:inline-block; }
+
+  footer { text-align:center; color:var(--muted); font-size:.78rem; padding:24px 20px; border-top:1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">RestoPro <span>Sistema de Facturación</span></div>
+  <a class="nav-wa" href="https://wa.me/18294725093?text=Hola, quiero información sobre RestoPro" target="_blank">💬 WhatsApp</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="trial-badge">✓ 3 días de prueba gratis — sin tarjeta</div>
+  <h1>El sistema de facturación<br>para tu <span>restaurante</span></h1>
+  <p>Control de inventario, ventas, cajeros, reportes y factura electrónica DGII. Todo en una app que instala en tu PC.</p>
+</div>
+
+<!-- PLANES -->
+<div class="plans">
+
+  <!-- MENSUAL -->
+  <div class="plan">
+    <div class="plan-name">Mensual</div>
+    <div class="plan-price"><sup>$</sup>80</div>
+    <div class="plan-period">USD por mes</div>
+    <ul class="plan-features">
+      <li><span class="ok">✓</span> 1 caja (PC principal)</li>
+      <li><span class="ok">✓</span> Inventario ilimitado</li>
+      <li><span class="ok">✓</span> Factura electrónica DGII</li>
+      <li><span class="ok">✓</span> Reportes de ventas</li>
+      <li><span class="ok">✓</span> Multi-caja por red</li>
+      <li><span class="no">✗</span> <span style="color:#555">Actualizaciones incluidas</span></li>
+    </ul>
+    <button class="btn-plan btn-secondary" onclick="selPlan('Mensual','$80 USD/mes')">Elegir plan</button>
+  </div>
+
+  <!-- 6 MESES -->
+  <div class="plan">
+    <div class="plan-name">6 Meses</div>
+    <div class="plan-price"><sup>$</sup>300</div>
+    <div class="plan-period">USD — ahorra $180</div>
+    <ul class="plan-features">
+      <li><span class="ok">✓</span> 1 caja (PC principal)</li>
+      <li><span class="ok">✓</span> Inventario ilimitado</li>
+      <li><span class="ok">✓</span> Factura electrónica DGII</li>
+      <li><span class="ok">✓</span> Reportes de ventas</li>
+      <li><span class="ok">✓</span> Multi-caja por red</li>
+      <li><span class="ok">✓</span> Actualizaciones incluidas</li>
+    </ul>
+    <button class="btn-plan btn-secondary" onclick="selPlan('6 Meses','$300 USD')">Elegir plan</button>
+  </div>
+
+  <!-- ANUAL (popular) -->
+  <div class="plan popular">
+    <div class="popular-badge">⭐ MÁS POPULAR</div>
+    <div class="plan-name">Anual</div>
+    <div class="plan-price"><sup>$</sup>500</div>
+    <div class="plan-period">USD por año — ahorra $460</div>
+    <ul class="plan-features">
+      <li><span class="ok">✓</span> 1 caja (PC principal)</li>
+      <li><span class="ok">✓</span> Inventario ilimitado</li>
+      <li><span class="ok">✓</span> Factura electrónica DGII</li>
+      <li><span class="ok">✓</span> Reportes de ventas</li>
+      <li><span class="ok">✓</span> Multi-caja por red</li>
+      <li><span class="ok">✓</span> Actualizaciones incluidas</li>
+    </ul>
+    <button class="btn-plan btn-primary" onclick="selPlan('Anual','$500 USD/año')">Elegir plan</button>
+  </div>
+
+</div>
+
+<!-- MÉTODOS DE PAGO -->
+<div class="payment-section" id="payment" style="display:none">
+  <h2>Elige cómo pagar</h2>
+  <p id="plan-seleccionado" style="margin-bottom:24px;"></p>
+
+  <div class="methods">
+    <div class="method" onclick="selMethod('transferencia')">
+      <div class="method-icon">🏦</div>
+      <div class="method-name">Transferencia</div>
+      <div class="method-desc">Banco Popular / BHD / Banreservas</div>
+    </div>
+    <div class="method" onclick="selMethod('paypal')">
+      <div class="method-icon">🅿️</div>
+      <div class="method-name">PayPal</div>
+      <div class="method-desc">Tarjeta internacional</div>
+    </div>
+    <div class="method" onclick="selMethod('efectivo')">
+      <div class="method-icon">💵</div>
+      <div class="method-name">Efectivo</div>
+      <div class="method-desc">Pago en mano o delivery</div>
+    </div>
+    <div class="method" onclick="selMethod('whatsapp')">
+      <div class="method-icon">💬</div>
+      <div class="method-name">WhatsApp</div>
+      <div class="method-desc">Acordar método directo</div>
+    </div>
+  </div>
+
+  <!-- DETALLE TRANSFERENCIA -->
+  <div class="method-detail" id="detail-transferencia">
+    <h3>Datos para transferencia</h3>
+    <div class="info-row"><span>Banco</span><strong>Banreservas</strong></div>
+    <div class="info-row"><span>Tipo</span><strong>Cuenta de Ahorro</strong></div>
+    <div class="info-row"><span>Cuenta</span><strong id="cuenta">—</strong><button class="copy-btn" onclick="cp('cuenta')">Copiar</button></div>
+    <div class="info-row"><span>Titular</span><strong>LOUWIS ARIAS</strong></div>
+    <div class="info-row"><span>Concepto</span><strong id="concepto-trans">Licencia RestoPro</strong></div>
+    <a class="wa-btn" href="#" id="wa-trans" target="_blank">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.555 4.118 1.528 5.845L0 24l6.335-1.508C8.05 23.445 9.98 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.652-.51-5.17-1.398l-.371-.22-3.761.895.953-3.667-.242-.383C2.558 15.523 2 13.822 2 12 2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+      Confirmar pago por WhatsApp
+    </a>
+  </div>
+
+  <!-- DETALLE PAYPAL -->
+  <div class="method-detail" id="detail-paypal">
+    <h3>Pago por PayPal</h3>
+    <div class="info-row"><span>Email PayPal</span><strong id="paypal-email">louwismusic@gmail.com</strong><button class="copy-btn" onclick="cp('paypal-email')">Copiar</button></div>
+    <div class="info-row"><span>Concepto</span><strong id="concepto-pp">Licencia RestoPro</strong></div>
+    <a class="wa-btn" href="#" id="wa-paypal" target="_blank">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.555 4.118 1.528 5.845L0 24l6.335-1.508C8.05 23.445 9.98 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.652-.51-5.17-1.398l-.371-.22-3.761.895.953-3.667-.242-.383C2.558 15.523 2 13.822 2 12 2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+      Confirmar pago por WhatsApp
+    </a>
+  </div>
+
+  <!-- DETALLE EFECTIVO -->
+  <div class="method-detail" id="detail-efectivo">
+    <h3>Pago en efectivo</h3>
+    <p style="color:#888; font-size:.85rem; margin-bottom:16px;">Coordinamos la entrega o punto de encuentro por WhatsApp.</p>
+    <a class="wa-btn" href="https://wa.me/18294725093?text=Hola, quiero pagar en efectivo la licencia de RestoPro" target="_blank">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.555 4.118 1.528 5.845L0 24l6.335-1.508C8.05 23.445 9.98 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.652-.51-5.17-1.398l-.371-.22-3.761.895.953-3.667-.242-.383C2.558 15.523 2 13.822 2 12 2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+      Coordinar por WhatsApp
+    </a>
+  </div>
+
+  <!-- DETALLE WHATSAPP -->
+  <div class="method-detail" id="detail-whatsapp">
+    <h3>Pago por WhatsApp</h3>
+    <p style="color:#888; font-size:.85rem; margin-bottom:16px;">Escríbenos y acordamos el método que más te convenga (transferencia, PayPal, efectivo, etc.).</p>
+    <a class="wa-btn" href="https://wa.me/18294725093?text=Hola, quiero adquirir RestoPro" target="_blank">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.555 4.118 1.528 5.845L0 24l6.335-1.508C8.05 23.445 9.98 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.652-.51-5.17-1.398l-.371-.22-3.761.895.953-3.667-.242-.383C2.558 15.523 2 13.822 2 12 2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+      Abrir WhatsApp
+    </a>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="faq">
+  <h2>Preguntas frecuentes</h2>
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggle(this)">¿Qué incluye la prueba gratuita? <span class="arrow">▼</span></div>
+    <div class="faq-a">Acceso completo a todas las funciones durante 3 días, sin necesidad de tarjeta ni pago previo.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggle(this)">¿Funciona sin internet? <span class="arrow">▼</span></div>
+    <div class="faq-a">Sí. El sistema funciona completamente offline. Solo necesitas internet para la factura electrónica DGII y para recibir la clave de licencia.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggle(this)">¿Puedo usar multi-caja? <span class="arrow">▼</span></div>
+    <div class="faq-a">Sí. La PC principal funciona como servidor. Otras PCs, tablets o teléfonos en la misma red WiFi pueden acceder al sistema desde el navegador, sin instalar nada adicional.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggle(this)">¿Qué pasa si la PC donde está instalado falla? <span class="arrow">▼</span></div>
+    <div class="faq-a">Los datos se pueden respaldar automáticamente. Si cambia la PC, generamos una nueva clave de licencia para el nuevo equipo (aplica una sola transferencia).</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggle(this)">¿Incluye soporte? <span class="arrow">▼</span></div>
+    <div class="faq-a">Sí, soporte por WhatsApp incluido en todos los planes.</div>
+  </div>
+</div>
+
+<footer>© 2026 RestoPro · Sistema de Facturación · Rep. Dominicana · <a href="https://wa.me/18294725093" style="color:var(--green); text-decoration:none">WhatsApp</a></footer>
+
+<script>
+  const WA = '18294725093';
+  let _plan = '';
+
+  const CUENTA_BANCO = '9603260638';
+  document.getElementById('cuenta').textContent = CUENTA_BANCO;
+
+  function selPlan(nombre, precio) {
+    _plan = `${nombre} - ${precio}`;
+    document.getElementById('plan-seleccionado').textContent = `Plan seleccionado: ${_plan}`;
+    document.getElementById('payment').style.display = 'block';
+    document.getElementById('payment').scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+
+  function selMethod(id) {
+    document.querySelectorAll('.method').forEach(m => m.classList.remove('selected'));
+    document.querySelectorAll('.method-detail').forEach(d => d.classList.remove('show'));
+    event.currentTarget.classList.add('selected');
+    const det = document.getElementById('detail-' + id);
+    if (det) {
+      det.classList.add('show');
+      const msg = encodeURIComponent(`Hola, quiero adquirir RestoPro.\nPlan: ${_plan}\nMétodo de pago: ${id}`);
+      if (id === 'transferencia') {
+        document.getElementById('concepto-trans').textContent = `RestoPro - ${_plan}`;
+        document.getElementById('wa-trans').href = `https://wa.me/${WA}?text=${msg}`;
+      }
+      if (id === 'paypal') {
+        document.getElementById('concepto-pp').textContent = `RestoPro - ${_plan}`;
+        document.getElementById('wa-paypal').href = `https://wa.me/${WA}?text=${msg}`;
+      }
+    }
+  }
+
+  function cp(id) {
+    navigator.clipboard.writeText(document.getElementById(id).textContent);
+    event.target.textContent = '✓';
+    setTimeout(() => event.target.textContent = 'Copiar', 1500);
+  }
+
+  function toggle(el) {
+    el.parentElement.classList.toggle('open');
+  }
+</script>
+</body>
+</html>
